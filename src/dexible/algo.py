@@ -152,7 +152,10 @@ class AlgoWrapper:
         return StopLoss(policies=policies, *args, **kwargs)
 
     def create_twap(self, *args, **kwargs):
-        time_window_seconds = int(timedelta(**kwargs["time_window"]).total_seconds())
+        time_window = kwargs.get("time_window")
+        if type(time_window) == dict:
+            time_window = timedelta(**time_window)
+        time_window_seconds = int(time_window.total_seconds())
         policies = self._build_base_polices(*args, **kwargs) + \
                    [policy.BoundedDelay(randomize_delay=kwargs.get("randomize_delay", False),
                                         time_window_seconds=time_window_seconds)]
@@ -167,8 +170,13 @@ class AlgoWrapper:
         return TWAP(policies=policies, *args, **kwargs)
 
     def _build_base_polices(self, *args, **kwargs):
-        return [policy.GasCost(gas_type=kwargs.get("gas_policy").get("type"),
-                               amount=kwargs.get("gas_policy").get("amount"),
-                               deviation=kwargs.get("gas_policy").get("deviation")),
+        gas_policy = kwargs.get("gas_policy")
+        if type(gas_type) == dict:
+            gas_policy = policy.GasCost(
+                gas_type=gas_policy.get("type"),
+                amount=gas_policy.get("amount"),
+                deviation=gas_policy.get("deviation"))
+
+        return [gas_policy,
                 policy.Slippage(amount=kwargs["slippage_percent"])]
 
