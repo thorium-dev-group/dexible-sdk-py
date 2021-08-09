@@ -2,6 +2,7 @@ from enum import Enum
 from datetime import timedelta
 import logging
 import dexible.policy as policy
+from .exceptions import DexibleAlgoException
 
 log = logging.getLogger('DexAlgo')
 
@@ -14,9 +15,6 @@ class DexibleBaseAlgorithm:
         self.policies = policies
         self.name = name
         self.max_rounds = max_rounds
-        # self.verify = lambda self: self.verify_policies([])
-        # self.serialize = lambda self: {"algorithm": self.name,
-        #                              "policies": [p.serialize() for p in self.policies]}
 
     def verify(self):
         return self.verify_policies([])
@@ -70,6 +68,10 @@ class DexibleBaseAlgorithm:
 
         return "Must have at least GasCost and Slippage policies"
 
+
+    def __str__(self):
+        return f"<Algo {self.name} policies: {self.policies}>"
+    __repr__ = __str__
 
 class Limit(DexibleBaseAlgorithm):
     tag = "Limit"
@@ -130,7 +132,7 @@ class AlgoWrapper:
         elif _type == self.types.TWAP.value:
             return self.create_twap(*args, **kwargs)
         else:
-            raise Exception(f"Unsupported algorithm type: {_type}")
+            raise DexibleAlgoException(f"Unsupported algorithm type: {_type}")
 
     def create_limit(self, *args, **kwargs):
         # Invert price since quote are in output tokens while prices are

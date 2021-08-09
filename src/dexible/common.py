@@ -1,9 +1,10 @@
 from decimal import Decimal
+from .exceptions import DexibleException
 
 
 def chain_to_name(network, chain_id):
     if network != 'ethereum':
-        raise Exception("Only support ethereum right now")
+        raise DexibleException("Only support ethereum right now")
 
     if chain_id == 1:
         return "mainnet"
@@ -14,7 +15,7 @@ def chain_to_name(network, chain_id):
     elif chain_id == 42:
         return "kovan"
     else:
-        raise Exception("Only mainnet and kovan are supported right now")
+        raise DexibleException("Only mainnet and kovan are supported right now")
 
 
 CHAIN_CONFIG = {
@@ -47,7 +48,7 @@ class Token:
         self.allowance = allowance
 
     def __str__(self):
-        return f"<Token '{self.symbol}' {self.address} decimals: {self.decimals}"\
+        return f"<Token {self.symbol} {self.address} decimals: {self.decimals}"\
                f" balance: {self.balance} allowance: {self.allowance}>"
     __repr__ = __str__
 
@@ -129,3 +130,8 @@ class Price:
             "outAmount": str(self.out_amount)
         }
 
+    def __str__(self):
+        return f"<Price token in: {self.in_token}, token out: {self.out_token}, " \
+               f"in amount: {self.in_amount}, out amount: {self.out_amount}, "\
+               f"(rate: {self.rate})>"
+    __repr__ = __str__

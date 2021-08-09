@@ -9,10 +9,11 @@ from datetime import datetime
 from eth_account.messages import encode_defunct
 from eth_utils.curried import to_bytes
 from .common import chain_to_name
+from .exceptions import DexibleException
 
 log = logging.getLogger('APIClient')
-
 DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1";
+
 
 class APIClient:
     SIGNATURE_PREFIX = "Signature "
@@ -106,7 +107,7 @@ class APIClient:
         elif header.lower() in headers:
             return headers[header.lower()]
         else:
-            raise Exception(f"Header expected to exist and have value set: {header}")
+            raise DexibleException(f"Header expected to exist and have value set: {header}")
 
     @staticmethod
     def double_wrap_as_in_upstream(primitive: bytes = None, *, hexstr: str = None, text: str = None):
@@ -139,7 +140,7 @@ class APIClient:
                 async with session.get(url) as r:
                     json_body = await r.json()
                     if not json_body:
-                        raise Exception("Missing result in GET request")
+                        raise DexibleException("Missing result in GET request")
                     return json_body
         except Exception as e:
             log.error("Problem in APIClient GET request ", e)
@@ -159,7 +160,7 @@ class APIClient:
                 async with session.post(url, data=post_data) as r:
                     json_body = await r.json()
                     if not json_body:
-                        raise Exception("Missing result in POST request")
+                        raise DexibleException("Missing result in POST request")
                     return json_body
         except Exception as e:
             log.error("Problem in APIClient POST request ", e)

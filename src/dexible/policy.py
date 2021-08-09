@@ -23,15 +23,17 @@ class BoundedDelay(DexibleBasePolicy):
         self.randomize_delay = randomize_delay
 
     def verify(self):
-        # TODO: Essentially useless, argument is required in __init__
-        if self.time_window_seconds is None:
-            return "BoundedDelay requires an time_window_seconds param"
         return None
 
     def serialize(self):
         return {"type": self.name,
                 "params": {"timeWindow": self.time_window_seconds,
                            "randomize": self.randomize_delay}}
+
+    def __str__(self):
+        return f"<Policy {self.tag} time_window_seconds: {self.time_window_seconds}, " \
+               f"randomize_delay: {self.randomize_delay}>"
+    __repr__ = __str__
 
 
 class Expiration(DexibleBasePolicy):
@@ -48,6 +50,10 @@ class Expiration(DexibleBasePolicy):
         return {"type": self.name,
                 "params": {"seconds": self.seconds}}
 
+    def __str__(self):
+        return f"<Policy {self.tag} seconds: {self.seconds}>"
+    __repr__ = __str__
+
 
 class FailLimit(DexibleBasePolicy):
     tag = "FailLimit"
@@ -62,6 +68,10 @@ class FailLimit(DexibleBasePolicy):
     def serialize(self):
         return {"type": self.name,
                 "params": {"maxFailures": self.max_failures}}
+
+    def __str__(self):
+        return f"<Policy {self.tag} max_failures: {self.max_failures}>"
+    __repr__ = __str__
 
 
 class GasCost(DexibleBasePolicy):
@@ -86,6 +96,11 @@ class GasCost(DexibleBasePolicy):
                            "amount": self.amount or 0,
                            "deviation": self.deviation or 0}}
 
+    def __str__(self):
+        return f"<Policy {self.tag} gas_type: {self.gas_type}, amount: {self.amount}, "\
+               f"deviation {self.deviation}>"
+    __repr__ = __str__
+
 
 class LimitPrice(DexibleBasePolicy):
     tag = "LimitPrice"
@@ -101,6 +116,11 @@ class LimitPrice(DexibleBasePolicy):
     def serialize(self):
         return {"type": self.name,
                 "params": {"price": self.price.toJSON()}}
+
+    def __str__(self):
+        return f"<Policy {self.tag} price: {self.price}>"
+    __repr__ = __str__
+
 
 
 class PriceBounds(DexibleBasePolicy):
@@ -122,6 +142,11 @@ class PriceBounds(DexibleBasePolicy):
                            "upperBoundPercentage": self.upper_bound_percent,
                            "lowerBoundPercentage": self.lower_bound_percent}}
 
+    def __str__(self):
+        return f"<Policy {self.tag} upper_bound_percent: {self.upper_bound_percent}, " \
+               f"lower_bound_percent: {self.lower_bound_percent}>"
+    __repr__ = __str__
+
 
 class Slippage(DexibleBasePolicy):
     tag = "Slippage"
@@ -136,6 +161,10 @@ class Slippage(DexibleBasePolicy):
     def serialize(self):
         return {"type": self.name,
                 "params": {"amount": self.amount}}
+
+    def __str__(self):
+        return f"<Policy {self.tag} amount: {self.amount}>"
+    __repr__ = __str__
 
 
 class StopPrice(DexibleBasePolicy):
@@ -154,3 +183,7 @@ class StopPrice(DexibleBasePolicy):
                 "params": {"trigger": self.trigger.toJSON(),
                            "above": self.above}}
 
+    def __str__(self):
+        return f"<Policy {self.tag} trigger: {self.trigger}, " \
+               f"above: {self.above}>"
+    __repr__ = __str__

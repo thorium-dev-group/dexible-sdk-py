@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 from requests.auth import AuthBase
 from eth_account.messages import encode_defunct
 from eth_utils.curried import to_bytes
+from .exceptions import DexibleException
+
 
 class DexibleHttpSignatureAuth(AuthBase):
     SIGNATURE_PREFIX = "Signature "
@@ -12,7 +14,7 @@ class DexibleHttpSignatureAuth(AuthBase):
     def __init__(self, signer, expires_in=None):
         self.signer = signer
         if expires_in is not None:
-            raise Exception("expires_in is currently unsupported")
+            raise DexibleException("expires_in is currently unsupported")
 
     def __call__(self, r):
         timestamp = datetime.utcnow()
@@ -92,7 +94,7 @@ class DexibleHttpSignatureAuth(AuthBase):
         elif header.lower() in request.headers:
             return request.headers[header.lower()]
         else:
-            raise Exception(f"Header expected to exist and have value set: {header}")
+            raise DexibleException(f"Header expected to exist and have value set: {header}")
 
     @staticmethod
     def double_wrap_as_in_upstream(primitive: bytes = None, *, hexstr: str = None, text: str = None):

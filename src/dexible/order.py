@@ -2,8 +2,12 @@ import logging
 from .common import Token
 from .quote import get_quote
 from .algo import DexibleBaseAlgorithm
+from .exceptions import (InvalidOrderException,
+                         OrderIncompleteException,
+                         QuoteMissingException)
 
 log = logging.getLogger('DexOrder')
+
 
 class DexOrder:
     api_client = None
@@ -28,7 +32,7 @@ class DexOrder:
 
     def serialize(self):
         if self.quote_id == 0:
-            raise Exception("No quote found to serialize order")
+            raise OrderIncompleteException("No quote found to serialize order")
 
         algo_serialized = self.algo.serialize()
 
@@ -82,18 +86,14 @@ class DexOrder:
         log.debug("Preparing order for submission")
         slippage = self.algo.get_slippage()
         if not slippage:
-            return {"error": "Missing slippage amount"}
+            raise InvalidOrderException("Missing slippage amount")
 
-        try:
-            await self._generate_quote(slippage)
-            err = self.verify()
+        await self._generate_quote(slippage)
+        err = self.verify()
 
-            if err is not None:
-                return {"error": err}
-            return {"order": self}
-        except Exception as e:
-            # raise e  # TODO: Create Exception hierarchy
-            return {"error": str(e)}
+        if err is not None:
+            raise InvalidOrderException(err)
+        return self
 
     async def _generate_quote(self, slippage_percent):
         log.debug("Generating a default quote...")
@@ -121,15 +121,15 @@ class DexOrder:
                 best = single
 
             if best is None:
-                raise Exception("Could not generate a quote for order")
+                raise QuoteMissingException("Could not generate a quote for order")
 
             # pick the recommended
             self.quote_id = best["id"]
             self.quote = best
 
         else:
-            log.error("No quote returned from server")
-            raise Exception("Could not generate quote for order")
+            log.error(f"No quote returned from server: {quotes}")
+            raise QuoteMissingException(f"Could not generate quote for order: {quotes}")
         return quotes
 
     async def submit(self):
@@ -137,11 +137,21 @@ class DexOrder:
         err = self.verify()
         if err:
             log.error("Problem found during verification", err)
-            raise Exception(err)
+            raise InvalidOrderException(err)
 
         serialized = self.serialize()
         log.debug(f"Sending raw order details: {serialized}")
         return await self.api_client.post("orders", serialized)
+
+    def __str__(self):
+        has_quote = self.quote_id > 0
+        quote_str = "No quote"
+        if has_quote:
+            quote_str = f"{self.quote}"
+        return f"<Order in: {self.amount_in} {self.token_in}, out: {self.token_out}, " \
+               f"max_rounds: {self.max_rounds}, algo: {self.algo}, tags: {self.tags}, "\
+               f"quote: {quote_str}>"
+    __repr__ = __str__
 
 
 class OrderWrapper:

@@ -108,9 +108,9 @@ class TokenSupport:
         try:
             r = await self.verify(address);
             if not r:
-                raise Exception(f"Bad status code: {r}")
+                raise DexibleException(f"Bad status code: {r}")
         except:
-            raise Exception("Unsupported token address: " + address)
+            raise DexibleException("Unsupported token address: " + address)
 
         if self.address is None:
             self.address = self.signer.address

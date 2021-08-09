@@ -4,6 +4,8 @@ import requests
 import json
 from .common import chain_to_name
 from .dexible_http import DexibleHttpSignatureAuth
+from .exceptions import DexibleException
+
 
 log = logging.getLogger('APIClient')
 
@@ -30,10 +32,9 @@ class APIClient:
             r = requests.get(url, auth=self.adapter)
 
             if not r.content:
-                raise Exception("Missing result in GET request")
+                raise DexibleException("Missing result in GET request")
 
             return json.loads(r.content)
-            # return r.content
         except Exception as e:
             log.error("Problem in APIClient GET request ", e)
             raise
@@ -54,7 +55,7 @@ class APIClient:
             r = requests.post(url, data=post_data, auth=self.adapter)
 
             if not r.content:
-                raise Exception("Missing result in POST request")
+                raise DexibleException("Missing result in POST request")
 
             return json.loads(r.content)
         except Exception as e:
