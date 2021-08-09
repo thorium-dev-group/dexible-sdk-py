@@ -33,21 +33,14 @@ async def main():
               {"name": "test",
                "value": True}])
 
-    r = await twap.create_order()
-
-    if "error" in r:
-        log.info(f"Problem with order: {r['error']}")
-        raise Exception(r['error'])
-    elif "order" not in r:
-        raise Exception("No order in prepare response")
-    else:
-        order = r["order"]
+    try:
+        order = await twap.create_order()
         log.info("Submitting order...")
-        r = await order.submit()
-        if "error" in r:
-            raise Exception(r["error"])
+        result = await order.submit()
 
-        log.info(f"Order result: {r}")
+        log.info(f"Order result: {result}")
+    except InvalidOrderException as e:
+        log.error(f"Probem with order: {e}")
 
 if __name__ == '__main__':
     asyncio.run(main())

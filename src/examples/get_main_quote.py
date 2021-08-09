@@ -5,9 +5,9 @@ from tokens import *
 from dexible.common import as_units
 
 async def main():
-	logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(level=logging.INFO)
 	inputs = [WETH_KOVAN, USDC_KOVAN, WETH_KOVAN, WETH_KOVAN]
-	outputs = [BAT_KOVAN, WETH_KOVAN, DAI_KOVAN, USDC_KOVAN]
+	outputs = [WBTC_KOVAN, WETH_KOVAN, DAI_KOVAN, USDC_KOVAN]
 	amounts = [as_units(300, 18), as_units(300000, 6), as_units(300, 18), as_units(300, 18)]
 	sdk = BaseOrder.create_dexible_sdk()
 	calls = []

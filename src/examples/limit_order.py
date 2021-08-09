@@ -1,12 +1,12 @@
 from tokens import *
 from baseorder import BaseOrder, log
 from dexible.common import Price, as_units
+from dexible.exceptions import InvalidOrderException
 import asyncio
 
-# TOKEN_IN = "0xa36085f69e2889c224210f603d836748e7dc0088" # Chainlink Kovan
 TOKEN_IN = DAI_KOVAN
 TOKEN_OUT = WETH_KOVAN
-IN_AMT = as_units(5, 18)
+IN_AMT = as_units(5000, 18)
 
 async def main():
     sdk = BaseOrder.create_dexible_sdk()
@@ -33,21 +33,14 @@ async def main():
             }
         })
 
-    r = await limit.create_order()
+    try:
+        order = await limit.create_order()
+        log.info(f"Submitting order: {order}")
+        result = await order.submit()
 
-    if "error" in r:
-        log.info(f"Problem with order: {r['error']}")
-        raise Exception(r['error'])
-    elif "order" not in r:
-        raise Exception("No order in prepare response")
-    else:
-        order = r["order"]
-        log.info("Submitting order...")
-        r = await order.submit()
-        if "error" in r:
-            raise Exception(r["error"])
-
-        log.info(f"Order result: {r}")
+        log.info(f"Order result: {result}")
+    except InvalidOrderException as e:
+        log.error(f"Probem with order: {e}")
 
 if __name__ == '__main__':
     asyncio.run(main())

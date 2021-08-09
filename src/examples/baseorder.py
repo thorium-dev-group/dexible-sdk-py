@@ -4,14 +4,15 @@ import logging
 from dexible import DexibleSDK
 from dexible.common import chain_to_name
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 log = logging.getLogger('DexibleSDK-Example')
 
 class BaseOrder:
     @staticmethod
     def create_dexible_sdk():
-        chain_id = int(os.getenv("NET_ID")) or 42
+        chain_id = os.getenv("NET_ID") or 42
+        chain_id = int(chain_id)
         key = os.getenv("WALLET_KEY")
         if key is None:
             raise Exception("Missing wallet key in env.  Set WALLET_KEY env var.");
@@ -96,5 +97,5 @@ class BaseOrder:
             "tags": self.tags
         }
 
-        log.info(f"Preparing order spec: {order_spec}")
+        log.debug(f"Preparing order spec: {order_spec}")
         return await self.dexible.order.prepare(**order_spec)
