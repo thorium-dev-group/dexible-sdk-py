@@ -48,8 +48,8 @@ class Token:
         self.allowance = allowance
 
     def __str__(self):
-        return f"<Token {self.symbol} {self.address} decimals: {self.decimals}"\
-               f" balance: {self.balance} allowance: {self.allowance}>"
+        return f"<Token {self.symbol} {self.address} decimals: {self.decimals},"\
+               f" balance: {self.balance}, allowance: {self.allowance}>"
     __repr__ = __str__
 
 class Contact:

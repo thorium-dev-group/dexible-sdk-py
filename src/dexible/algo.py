@@ -171,7 +171,7 @@ class AlgoWrapper:
 
     def _build_base_polices(self, *args, **kwargs):
         gas_policy = kwargs.get("gas_policy")
-        if type(gas_type) == dict:
+        if type(gas_policy) == dict:
             gas_policy = policy.GasCost(
                 gas_type=gas_policy.get("type"),
                 amount=gas_policy.get("amount"),

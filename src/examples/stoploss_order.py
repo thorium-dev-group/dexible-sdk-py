@@ -1,6 +1,7 @@
 from tokens import *
 from baseorder import BaseOrder, log
 from dexible.common import Price, as_units
+from dexible.exceptions import InvalidOrderException
 import asyncio
 
 TOKEN_IN = DAI_KOVAN
