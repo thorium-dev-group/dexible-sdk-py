@@ -1,0 +1,2 @@
+include src/dexible/abi/*.json
+include LICENSE
