@@ -1,11 +1,12 @@
 from tokens import *
 from baseorder import BaseOrder, log
 from dexible.common import Price, as_units
+from dexible.exceptions import *
 import asyncio
 
 TOKEN_IN = DAI_KOVAN
 TOKEN_OUT = WETH_KOVAN
-IN_AMT = as_units(5, 18)
+IN_AMT = as_units(500, 18)
 
 async def main():
     sdk = BaseOrder.create_dexible_sdk()
@@ -44,6 +45,10 @@ async def main():
         log.info(f"Order result: {result}")
     except InvalidOrderException as e:
         log.error(f"Probem with order: {e}")
+    except QuoteMissingException as e:
+        log.error(f"Could not generate quote: {e}")
+    except DexibleException as e:
+        log.error(f"Generic problem: {e}")
 
 if __name__ == '__main__':
     asyncio.run(main())

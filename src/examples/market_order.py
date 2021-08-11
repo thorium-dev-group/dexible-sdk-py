@@ -1,7 +1,7 @@
 from tokens import *
 from baseorder import BaseOrder, log
 from dexible.common import as_units
-from dexible.exceptions import InvalidOrderException
+from dexible.exceptions import *
 import asyncio
 
 TOKEN_IN = DAI_KOVAN
@@ -34,6 +34,10 @@ async def main():
         log.info(f"Order result: {result}")
     except InvalidOrderException as e:
         log.error(f"Probem with order: {e}")
+    except QuoteMissingException as e:
+        log.error(f"Could not generate quote: {e}")
+    except DexibleException as e:
+        log.error(f"Generic problem: {e}")
 
 
 if __name__ == '__main__':
