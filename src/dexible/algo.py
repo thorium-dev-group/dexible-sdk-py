@@ -3,6 +3,7 @@ from datetime import timedelta
 import logging
 import dexible.policy as policy
 from .exceptions import DexibleAlgoException
+from .common import Price
 
 log = logging.getLogger('DexAlgo')
 
@@ -137,8 +138,14 @@ class AlgoWrapper:
     def create_limit(self, *args, **kwargs):
         # Invert price since quote are in output tokens while prices are
         # expressed in input tokens
+        if "price" not in kwargs:
+            raise DexibleAlgoException("price is required")
+        price = kwargs.get("price")
+        if type(price) != Price:
+            raise DexibleAlgoException(
+                "price must be of type dexible.common.Price")
         policies = self._build_base_polices(*args, **kwargs) + \
-                   [policy.LimitPrice(price=kwargs["price"])]
+                   [policy.LimitPrice(price=price)]
 
         return Limit(policies=policies, *args, **kwargs)
 
@@ -146,37 +153,87 @@ class AlgoWrapper:
         return Market(policies=self._build_base_polices(*args, **kwargs), *args, **kwargs)
 
     def create_stop_loss(self, *args, **kwargs):
+        if "trigger_price" not in kwargs:
+            raise DexibleAlgoException("trigger_price is required")
+        trigger_price = kwargs.get("trigger_price")
+        if type(trigger_price) != Price:
+            raise DexibleAlgoException(
+                "trigger_price must be of type dexible.common.Price")
+
+        if "is_above" not in kwargs:
+            raise DexibleAlgoException("is_above is required")
+        is_above = kwargs.get("is_above")
+        if type(is_above) != bool:
+            raise DexibleAlgoException("is_above must be of type bool")
+
         policies = self._build_base_polices(*args, **kwargs) + \
-                   [policy.StopPrice(trigger=kwargs.get("trigger_price"),
-                                     above=kwargs.get("is_above"))]
+                   [policy.StopPrice(trigger=trigger_price,
+                                     above=is_above)]
         return StopLoss(policies=policies, *args, **kwargs)
 
     def create_twap(self, *args, **kwargs):
+        if "time_window" not in kwargs:
+            raise DexibleAlgoException("time_window is required")
         time_window = kwargs.get("time_window")
         if type(time_window) == dict:
             time_window = timedelta(**time_window)
+        elif type(time_window) == timedelta:
+            pass
+        else:
+            raise DexibleAlgoException(
+                "time_window must be of type datetime.timedelta or dict")
         time_window_seconds = int(time_window.total_seconds())
+
+        randomize_delay = kwargs.get("randomize_delay", False)
+        if type(randomize_delay) != bool:
+            raise DexibleAlgoException("randomize_delay must be of type bool")
         policies = self._build_base_polices(*args, **kwargs) + \
-                   [policy.BoundedDelay(randomize_delay=kwargs.get("randomize_delay", False),
-                                        time_window_seconds=time_window_seconds)]
+                   [policy.BoundedDelay(
+                        randomize_delay=randomize_delay,
+                        time_window_seconds=time_window_seconds)]
         log.debug(f"Parsed TWAP duration in seconds: {time_window_seconds}")
+
         if "price_range" in kwargs:
+            price_range = kwargs.get("price_range")
+            if type(price_range) == dict:
+                price_range = policy.PriceBounds(
+                    base_price=price_range.get("base_price"),
+                    lower_bound_percent=price_range.get("lower_bound_percent"),
+                    upper_bound_percent=price_range.get("upper_bound_percent"))
+            elif type(price_range) == policy.PriceBounds:
+                pass
+            else:
+                raise DexibleAlgoException(
+                    "price_range must be of type dexible.policy.PriceBounds or dict")
             # invert price since quotes are in output tokens while prices are 
             # expressed in input tokens
-            policies.append(policy.PriceBounds(
-                base_price=kwargs["price_range"]["base_price"],
-                lower_bound_percent=kwargs["price_range"]["lower_bound_percent"],
-                upper_bound_percent=kwargs["price_range"]["upper_bound_percent"]))
+            policies.append(price_range)
         return TWAP(policies=policies, *args, **kwargs)
 
     def _build_base_polices(self, *args, **kwargs):
+        if "gas_policy" not in kwargs:
+            raise DexibleAlgoException("gas_policy is required")
         gas_policy = kwargs.get("gas_policy")
         if type(gas_policy) == dict:
             gas_policy = policy.GasCost(
                 gas_type=gas_policy.get("type"),
                 amount=gas_policy.get("amount"),
                 deviation=gas_policy.get("deviation"))
+        elif type(gas_policy) == policy.GasCost:
+            pass
+        else:
+            raise DexibleAlgoException(
+                "gas_policy must be of type dexible.policy.GasCost or dict")
 
-        return [gas_policy,
-                policy.Slippage(amount=kwargs["slippage_percent"])]
+        if "slippage_percent" not in kwargs:
+            raise DexibleAlgoException("slippage_percent is required")
+        slippage_percent = kwargs.get("slippage_percent")
+        if type(slippage_percent) == int:
+            slippage_percent = policy.Slippage(amount=slippage_percent)
+        elif type(slippage_percent) == policy.Slippage:
+            pass
+        else:
+            raise DexibleAlgoException(
+                "slippage_percent must be of type dexible.policy.Slippage or int")
+        return [gas_policy, slippage_percent]
 
