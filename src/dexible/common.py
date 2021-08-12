@@ -2,7 +2,7 @@ from decimal import Decimal
 from .exceptions import DexibleException
 
 
-def (network, chain_id):
+def chain_to_name(network, chain_id):
     if network != 'ethereum':
         raise DexibleException("Only support ethereum right now")
 
