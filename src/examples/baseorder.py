@@ -8,6 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 log = logging.getLogger('DexibleSDK-Example')
 
+
 class BaseOrder:
     @staticmethod
     def create_dexible_sdk():
@@ -15,7 +16,8 @@ class BaseOrder:
         chain_id = int(chain_id)
         key = os.getenv("WALLET_KEY")
         if key is None:
-            raise Exception("Missing wallet key in env.  Set WALLET_KEY env var.");
+            raise Exception(
+                "Missing wallet key in env.  Set WALLET_KEY env var.")
 
         infura = os.getenv("INFURA_PROJECT_ID")
         local_rpc = os.getenv("LOCAL_RPC")
@@ -24,21 +26,24 @@ class BaseOrder:
 
         log.info(f"Creating SDK instance for chain id {chain_id}")
 
-        # create an SDK instance. The sdk is tied to an EVM-compatible network (currently only ethereum)
-        # and the chain id within that network. 
-        # Trader must link their wallet private key to sign txns and interact with orders API
-        # Infura is used as the default RPC provider to do on-chain lookups.
+        # create an SDK instance. The sdk is tied to an EVM-compatible
+        # network (currently only ethereum) and the chain id within that
+        # network. Trader must link their wallet private key to sign txns and
+        # interact with orders API Infura is used as the default RPC provider
+        # to do on-chain lookups.
         if local_rpc:
             provider = web3.Web3.HTTPProvider(local_rpc)
         else:
+            chainname = chain_to_name('ethereum', chain_id)
             provider = web3.Web3.HTTPProvider(
-                f"https://{chain_to_name('ethereum', chain_id)}.infura.io/v3/{infura}")
+                f"https://{chainname}.infura.io/v3/{infura}")
 
         account = web3.Account.from_key(web3.Web3.toBytes(hexstr=key))
 
         return DexibleSDK(provider, account, chain_id, 'ethereum')
 
-    def __init__(self, sdk, token_in, token_out, amount_in, algo_details, tags=[]):
+    def __init__(self, sdk, token_in, token_out,
+                 amount_in, algo_details, tags=[]):
         self.dexible = sdk
         self.token_in = token_in
         self.token_out = token_out
@@ -68,7 +73,8 @@ class BaseOrder:
             raise Exception("Unsupported output token")
 
         log.info("Creating algo...")
-        algo = self.dexible.algo.create(type=self.algo_details["type"], **self.algo_details["params"])
+        algo = self.dexible.algo.create(
+            type=self.algo_details["type"], **self.algo_details["params"])
         log.debug(f"Algo: {algo}")
 
         # Ensure dexible can spend input tokens
@@ -76,18 +82,20 @@ class BaseOrder:
             raise Exception("Insufficient balance to cover trade")
 
         if token_in.allowance < self.amount_in:
-            # if not, we need to increase. Note that this is the more expensive 
-            # way of approving since every order for this token will incur fees.
-            # Cheaper approach is to have some larger approval amount.
+            # if not, we need to increase. Note that this is the more
+            # expensive way of approving since every order for this token
+            # will incur fees. Cheaper approach is to have some larger
+            # approval amount.
 
-            # NOTE: we're increasing the spending vs. setting it to this order's 
-            # amount. Reason is that other orders may be waiting to execute for the token
-            # and we don't want to jeopardize those orders from getting paused due 
-            # to inadequate spend limits.
+            # NOTE: we're increasing the spending vs. setting it to this
+            # order's amount. Reason is that other orders may be waiting to
+            # execute for the token and we don't want to jeopardize those
+            # orders from getting paused due to inadequate spend limits.
             log.info("Increasing spend allowance for input token...")
-            # txn = await self.dexible.token.increase_spending(amount=self.amount_in, token=token_in)
-            txn = await self.dexible.token.increase_spending(amount=2**256 - 1, token=token_in)
-            log.info(f"Spending increased with txn hash: {txn}; new allowance: {token_in.allowance}")
+            txn = await self.dexible.token.increase_spending(
+                amount=2**256 - 1, token=token_in)
+            log.info(f"Spending increased with txn hash: {txn}; "
+                     f"new allowance: {token_in.allowance}")
 
         order_spec = {
             "token_in": token_in,

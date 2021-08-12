@@ -21,7 +21,8 @@ class DexOrder:
     quote_id = 0
     quote = None
 
-    def __init__(self, api_client, token_in, token_out, amount_in, algo, max_rounds, tags=[]):
+    def __init__(self, api_client, token_in, token_out, amount_in,
+                 algo, max_rounds, tags=[]):
         self.api_client = api_client
         self.token_in = token_in
         self.token_out = token_out
@@ -65,7 +66,7 @@ class DexOrder:
         if not self.token_in.balance:
             log.error("Input token has no balance")
             return "Input token is missing a balance"
-        
+
         if not self.token_in.allowance:
             log.error("Input token has no allowance")
             return "Input token is missing allowance"
@@ -79,7 +80,7 @@ class DexOrder:
             return "Insufficient token allowance for trade"
 
         log.debug("Surface-level order verification looks ok")
-        
+
         return None
 
     async def prepare(self):
@@ -121,7 +122,8 @@ class DexOrder:
                 best = single
 
             if best is None:
-                raise QuoteMissingException("Could not generate a quote for order")
+                raise QuoteMissingException(
+                    "Could not generate a quote for order")
 
             # pick the recommended
             self.quote_id = best["id"]
@@ -129,7 +131,8 @@ class DexOrder:
 
         else:
             log.error(f"No quote returned from server: {quotes}")
-            raise QuoteMissingException(f"Could not generate quote for order: {quotes}")
+            raise QuoteMissingException(
+                f"Could not generate quote for order: {quotes}")
         return quotes
 
     async def submit(self):
@@ -148,18 +151,24 @@ class DexOrder:
         quote_str = "No quote"
         if has_quote:
             quote_str = f"{self.quote}"
-        return f"<Order in: {self.amount_in} {self.token_in}, out: {self.token_out}, " \
-               f"max_rounds: {self.max_rounds}, algo: {self.algo}, tags: {self.tags}, "\
-               f"quote: {quote_str}>"
+        return f"<Order in: {self.amount_in} {self.token_in}, " \
+            f"out: {self.token_out}, max_rounds: {self.max_rounds}, " \
+            f"algo: {self.algo}, tags: {self.tags}, quote: {quote_str}>"
     __repr__ = __str__
 
 
 class OrderWrapper:
     api_client = None
+
     def __init__(self, api_client):
         self.api_client = api_client
 
-    async def prepare(self, token_in: Token, token_out: Token, amount_in: int, algo: DexibleBaseAlgorithm, tags: list):
+    async def prepare(self,
+                      token_in: Token,
+                      token_out: Token,
+                      amount_in: int,
+                      algo: DexibleBaseAlgorithm,
+                      tags: list):
         order = DexOrder(api_client=self.api_client,
                          token_in=token_in,
                          token_out=token_out,
@@ -167,20 +176,24 @@ class OrderWrapper:
                          algo=algo,
                          max_rounds=algo.max_rounds,
                          tags=tags)
-        return await order.prepare();
+        return await order.prepare()
 
     async def get_all(self, limit=100, offset=0, state="all"):
         assert(state in ["all", "active"])
-        return await self.api_client.get(f"orders?limit={limit}&offset={offset}&state={state}")
+        return await self.api_client.get(
+            f"orders?limit={limit}&offset={offset}&state={state}")
 
     async def get_one(self, id):
         return await self.api_client.get(f"orders/{id}")
 
     async def cancel(self, id):
-        return await self.api_client.post(f"orders/{id}/actions/cancel", {"orderId": id})
+        return await self.api_client.post(f"orders/{id}/actions/cancel",
+                                          {"orderId": id})
 
     async def pause(self, id):
-        return await self.api_client.post(f"orders/{id}/actions/pause", {"orderId": id})
+        return await self.api_client.post(f"orders/{id}/actions/pause",
+                                          {"orderId": id})
 
     async def resume(self, id):
-        return await self.api_client.post(f"orders/{id}/actions/resume", {"orderId": id})
+        return await self.api_client.post(f"orders/{id}/actions/resume",
+                                          {"orderId": id})

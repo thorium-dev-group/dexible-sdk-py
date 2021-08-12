@@ -12,7 +12,8 @@ from .common import chain_to_name
 from .exceptions import DexibleException
 
 log = logging.getLogger('APIClient')
-DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1";
+
+DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1"
 
 
 class APIClient:
@@ -24,14 +25,15 @@ class APIClient:
         self.chain_id = chain_id
         self.chain_name = chain_to_name(self.network, self.chain_id)
         self.base_url = self._build_base_url()
-        log.debug(f"Created API client for chain {self.chain_name} on network {self.network}")
+        log.debug(f"Created API client for chain {self.chain_name} "
+                  f"on network {self.network}")
 
     def make_headers(self, url, method, data=None):
         headers = {}
         timestamp = datetime.utcnow()
 
         # Always replace Date, making sure signed timestamp is correct
-        headers['Date'] = timestamp.isoformat()[:-3]+"Z" # Simulate JavaScript
+        headers['Date'] = timestamp.isoformat()[:-3]+"Z"  # Simulate JavaScript
         required_header_fields = ['Date']
 
         # Add content-type
@@ -48,10 +50,12 @@ class APIClient:
             required_header_fields.append('Digest')
 
         headers['Authorization'] = self.SIGNATURE_PREFIX + \
-            self.create_signature_string(url, headers, method, timestamp, required_header_fields)
+            self.create_signature_string(
+                url, headers, method, timestamp, required_header_fields)
         return headers
 
-    def create_signature_string(self, url, headers, method, created_timestamp, required_header_fields):
+    def create_signature_string(self, url, headers, method,
+                                created_timestamp, required_header_fields):
         # expires_timestamp = None
         # if self.expires_in is not None:
         #     expires_timestamp = created_timestamp + self.expires_in.total_seconds()
@@ -60,13 +64,15 @@ class APIClient:
         key_id = self.account.address
 
         # signature payload is assembled form of all headers being signed
-        signing_string = self.build_signing_string(url, headers, method, required_header_fields)
+        signing_string = self.build_signing_string(
+            url, headers, method, required_header_fields)
 
         # It's common practice to wrap message signatures with a common
         # prefix to prevent users from accidentally pre-signing transactions
         # wrapped_signing_string = create_signable_message_geth(text=signing_string)
         # Workaround for js double wrapping:
-        wrapped_signing_string = encode_defunct(self.double_wrap_as_in_upstream(text=signing_string))
+        wrapped_signing_string = encode_defunct(
+            self.double_wrap_as_in_upstream(text=signing_string))
 
         signature = self.account.sign_message(wrapped_signing_string)
 
@@ -77,11 +83,12 @@ class APIClient:
             "headers": " ".join(required_header_fields),
             "signature": signature.signature.hex()
         }
-        
-        # assemble signature value that will be embedded in Authorization header
+
+        # assemble signature value that will be embedded in the
+        # Authorization header
         signature_line = self.build_signature_line(signature_data)
-        
-        return signature_line;
+
+        return signature_line
 
     @classmethod
     def build_signature_line(cls, params):
@@ -89,7 +96,11 @@ class APIClient:
         return ",".join([f"{k}=\"{v}\"" for k, v in params.items()])
 
     @classmethod
-    def build_signing_string(cls, url, headers, method, required_header_fields):
+    def build_signing_string(cls,
+                             url,
+                             headers,
+                             method,
+                             required_header_fields):
         urlparsed = urlparse(url)
         tohost = urlparsed.path
         if urlparsed.query:
@@ -97,7 +108,8 @@ class APIClient:
 
         to_sign = "(request-target): " + method.lower() + " " + tohost
         for header in required_header_fields:
-            to_sign += "\n" + header.lower() + ": " + cls.get_header_value(headers, header)
+            to_sign += "\n" + header.lower() + \
+                ": " + cls.get_header_value(headers, header)
         return to_sign
 
     @classmethod
@@ -107,16 +119,20 @@ class APIClient:
         elif header.lower() in headers:
             return headers[header.lower()]
         else:
-            raise DexibleException(f"Header expected to exist and have value set: {header}")
+            raise DexibleException(
+                f"Header expected to exist and have value set: {header}")
 
     @staticmethod
-    def double_wrap_as_in_upstream(primitive: bytes = None, *, hexstr: str = None, text: str = None):
+    def double_wrap_as_in_upstream(primitive: bytes = None,
+                                   *,
+                                   hexstr: str = None,
+                                   text: str = None):
         """
             This is essentially a compatibility layer to achieve the same behavior as with the js sdk.
 
             The original sdk prewraps the message with this string, before passing it to signMessage.
             signMessage additionally wraps the message in a simliar fashion: (quote from doc)
-            
+
                 signer.signMessage( message ) ⇒ Promise< string< RawSignature > >
                 This returns a Promise which resolves to the Raw Signature of message.
 
@@ -136,7 +152,8 @@ class APIClient:
         url = f"{self.base_url}/{endpoint}"
         log.debug(f"GET call to {url}")
         try:
-            async with aiohttp.ClientSession(headers=self.make_headers(url, "get")) as session:
+            hdrs = self.make_headers(url, "get")
+            async with aiohttp.ClientSession(headers=hdrs) as session:
                 async with session.get(url) as r:
                     json_body = await r.json()
                     if not json_body:
@@ -156,16 +173,19 @@ class APIClient:
                 post_data = data
             log.debug(f"Posting data: {post_data}")
 
-            async with aiohttp.ClientSession(headers=self.make_headers(url, "post", data=post_data)) as session:
+            hdrs = self.make_headers(url, "post", data=post_data)
+            async with aiohttp.ClientSession(headers=hdrs) as session:
                 async with session.post(url, data=post_data) as r:
                     json_body = await r.json()
                     if not json_body:
-                        raise DexibleException("Missing result in POST request")
+                        raise DexibleException(
+                            "Missing result in POST request")
                     return json_body
         except Exception as e:
             log.error("Problem in APIClient POST request ", e)
             raise
 
     def _build_base_url(self):
-        base = os.getenv("API_BASE_URL") or f"https://{self.network}.{self.chain_name}.{DEFAULT_BASE_ENDPOINT}"
-        return base;
+        base = os.getenv("API_BASE_URL") or \
+            f"https://{self.network}.{self.chain_name}.{DEFAULT_BASE_ENDPOINT}"
+        return base

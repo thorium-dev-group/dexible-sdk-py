@@ -20,7 +20,8 @@ class DexibleHttpSignatureAuth(AuthBase):
         timestamp = datetime.utcnow()
 
         # Always replace Date, making sure signed timestamp is correct
-        r.headers['Date'] = timestamp.isoformat()[:-3]+"Z" # Simulate JavaScript
+        # Simulate typical JavaScript behavior
+        r.headers['Date'] = timestamp.isoformat()[:-3] + "Z"
         required_header_fields = ['Date']
 
         # Add content-type
@@ -29,16 +30,22 @@ class DexibleHttpSignatureAuth(AuthBase):
         r.headers["Content-Type"] = "application/json"
 
         if r.body is not None:
-            r.headers['Digest'] = f"SHA-256={base64.b64encode(hashlib.sha256(to_bytes(text=r.body)).digest()).decode()}"
+            shadigest256 = base64.b64encode(
+                hashlib.sha256(to_bytes(text=r.body)).digest()).decode()
+            r.headers['Digest'] = f"SHA-256={shadigest256}"
             required_header_fields.append('Digest')
 
             # log.debug("DIGEST: " + r.headers['Digest'])
 
-        r.headers['Authorization'] = self.SIGNATURE_PREFIX + self.create_signature_string(r, timestamp, required_header_fields)
+        r.headers['Authorization'] = self.SIGNATURE_PREFIX + \
+            self.create_signature_string(r, timestamp, required_header_fields)
 
         return r
 
-    def create_signature_string(self, r, created_timestamp, required_header_fields):
+    def create_signature_string(self,
+                                r,
+                                created_timestamp,
+                                required_header_fields):
         # expires_timestamp = None
         # if self.expires_in is not None:
         #     expires_timestamp = created_timestamp + self.expires_in.total_seconds()
@@ -53,7 +60,8 @@ class DexibleHttpSignatureAuth(AuthBase):
         # prefix to prevent users from accidentally pre-signing transactions
         # wrapped_signing_string = create_signable_message_geth(text=signing_string)
         # Workaround for js double wrapping:
-        wrapped_signing_string = encode_defunct(self.double_wrap_as_in_upstream(text=signing_string))
+        wrapped_signing_string = encode_defunct(
+            self.double_wrap_as_in_upstream(text=signing_string))
 
         signature = self.account.sign_message(wrapped_signing_string)
 
@@ -64,11 +72,12 @@ class DexibleHttpSignatureAuth(AuthBase):
             "headers": " ".join(required_header_fields),
             "signature": signature.signature.hex()
         }
-        
-        # assemble signature value that will be embedded in Authorization header
+
+        # assemble signature value that will be embedded in the
+        # Authorization header
         signature_line = self.build_signature_line(signature_data)
-        
-        return signature_line;
+
+        return signature_line
 
     @classmethod
     def build_signature_line(cls, params):
@@ -84,7 +93,8 @@ class DexibleHttpSignatureAuth(AuthBase):
 
         to_sign = "(request-target): " + request.method.lower() + " " + tohost
         for header in required_header_fields:
-            to_sign += "\n" + header.lower() + ": " + cls.get_header_value(request, header)
+            to_sign += "\n" + header.lower() + \
+                ": " + cls.get_header_value(request, header)
         return to_sign
 
     @classmethod
@@ -94,16 +104,20 @@ class DexibleHttpSignatureAuth(AuthBase):
         elif header.lower() in request.headers:
             return request.headers[header.lower()]
         else:
-            raise DexibleException(f"Header expected to exist and have value set: {header}")
+            raise DexibleException(
+                f"Header expected to exist and have value set: {header}")
 
     @staticmethod
-    def double_wrap_as_in_upstream(primitive: bytes = None, *, hexstr: str = None, text: str = None):
+    def double_wrap_as_in_upstream(primitive: bytes = None,
+                                   *,
+                                   hexstr: str = None,
+                                   text: str = None):
         """
             This is essentially a compatibility layer to achieve the same behavior as with the js sdk.
 
             The original sdk prewraps the message with this string, before passing it to signMessage.
             signMessage additionally wraps the message in a simliar fashion: (quote from doc)
-            
+
                 signer.signMessage( message ) ⇒ Promise< string< RawSignature > >
                 This returns a Promise which resolves to the Raw Signature of message.
 

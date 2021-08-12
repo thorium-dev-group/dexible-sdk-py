@@ -4,7 +4,8 @@ class QuoteWrapper:
     def __init__(self, api_client):
         self.api_client = api_client
 
-    async def get_quote(self, token_in, token_out, amount_in, slippage_percent, max_rounds=None, max_fixed_gas=None):
+    async def get_quote(self, token_in, token_out, amount_in, slippage_percent,
+                        max_rounds=None, max_fixed_gas=None):
         return await get_quote(api_client=self.api_client,
                                token_in=token_in,
                                token_out=token_out,
@@ -14,7 +15,9 @@ class QuoteWrapper:
                                max_fixed_gas=max_fixed_gas)
 
 
-async def get_quote(api_client, token_in, token_out, amount_in, slippage_percent, max_rounds=None, min_order_size=None, max_fixed_gas=None):
+async def get_quote(api_client, token_in, token_out, amount_in,
+                    slippage_percent, max_rounds=None, min_order_size=None,
+                    max_fixed_gas=None):
     if min_order_size is None:
         min_order_size = amount_in * 30 // 100
     if max_rounds:
@@ -33,5 +36,4 @@ async def get_quote(api_client, token_in, token_out, amount_in, slippage_percent
     if max_fixed_gas:
         quote_body["maxFixedGas"] = max_fixed_gas
 
-    return await api_client.post("quotes", data=quote_body);
-
+    return await api_client.post("quotes", data=quote_body)

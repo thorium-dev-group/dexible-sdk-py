@@ -7,6 +7,7 @@ from .common import Price
 
 log = logging.getLogger('DexAlgo')
 
+
 class DexibleBaseAlgorithm:
     name = None
     policies = None
@@ -25,7 +26,8 @@ class DexibleBaseAlgorithm:
                 "policies": [p.serialize() for p in self.policies]}
 
     def get_slippage(self):
-        slippages = list(filter(lambda p: p.name == policy.Slippage.tag, self.policies))
+        slippages = list(
+            filter(lambda p: p.name == policy.Slippage.tag, self.policies))
         if len(slippages) == 0:
             return 0
         else:
@@ -59,8 +61,10 @@ class DexibleBaseAlgorithm:
                 req_matches.append(p.name)
 
         if len(required) != len(req_matches):
-            log.debug(f"Required and matches don't match. Required: {required}; Provided: {req_matches}")
-            missing = list(filter(lambda req: req not in req_matches, required))
+            log.debug(f"Required and matches don't match. "
+                      f"Required: {required}; Provided: {req_matches}")
+            missing = list(
+                filter(lambda req: req not in req_matches, required))
             return f"Must have following policies: {missing}"
 
         if has_gas and has_slippage:
@@ -69,10 +73,10 @@ class DexibleBaseAlgorithm:
 
         return "Must have at least GasCost and Slippage policies"
 
-
     def __str__(self):
         return f"<Algo {self.name} policies: {self.policies}>"
     __repr__ = __str__
+
 
 class Limit(DexibleBaseAlgorithm):
     tag = "Limit"
@@ -145,12 +149,13 @@ class AlgoWrapper:
             raise DexibleAlgoException(
                 "price must be of type dexible.common.Price")
         policies = self._build_base_polices(*args, **kwargs) + \
-                   [policy.LimitPrice(price=price)]
+            [policy.LimitPrice(price=price)]
 
         return Limit(policies=policies, *args, **kwargs)
 
     def create_market(self, *args, **kwargs):
-        return Market(policies=self._build_base_polices(*args, **kwargs), *args, **kwargs)
+        return Market(policies=self._build_base_polices(*args, **kwargs),
+                      *args, **kwargs)
 
     def create_stop_loss(self, *args, **kwargs):
         if "trigger_price" not in kwargs:
@@ -167,8 +172,8 @@ class AlgoWrapper:
             raise DexibleAlgoException("is_above must be of type bool")
 
         policies = self._build_base_polices(*args, **kwargs) + \
-                   [policy.StopPrice(trigger=trigger_price,
-                                     above=is_above)]
+            [policy.StopPrice(trigger=trigger_price,
+                              above=is_above)]
         return StopLoss(policies=policies, *args, **kwargs)
 
     def create_twap(self, *args, **kwargs):
@@ -188,9 +193,9 @@ class AlgoWrapper:
         if type(randomize_delay) != bool:
             raise DexibleAlgoException("randomize_delay must be of type bool")
         policies = self._build_base_polices(*args, **kwargs) + \
-                   [policy.BoundedDelay(
-                        randomize_delay=randomize_delay,
-                        time_window_seconds=time_window_seconds)]
+            [policy.BoundedDelay(
+                randomize_delay=randomize_delay,
+                time_window_seconds=time_window_seconds)]
         log.debug(f"Parsed TWAP duration in seconds: {time_window_seconds}")
 
         if "price_range" in kwargs:
@@ -204,8 +209,9 @@ class AlgoWrapper:
                 pass
             else:
                 raise DexibleAlgoException(
-                    "price_range must be of type dexible.policy.PriceBounds or dict")
-            # invert price since quotes are in output tokens while prices are 
+                    "price_range must be of type "
+                    "dexible.policy.PriceBounds or dict")
+            # invert price since quotes are in output tokens while prices are
             # expressed in input tokens
             policies.append(price_range)
         return TWAP(policies=policies, *args, **kwargs)
@@ -234,6 +240,6 @@ class AlgoWrapper:
             pass
         else:
             raise DexibleAlgoException(
-                "slippage_percent must be of type dexible.policy.Slippage or int")
+                "slippage_percent must be of type "
+                "dexible.policy.Slippage or int")
         return [gas_policy, slippage_percent]
-

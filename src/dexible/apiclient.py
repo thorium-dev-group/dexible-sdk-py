@@ -6,10 +6,10 @@ from .common import chain_to_name
 from .dexible_http import DexibleHttpSignatureAuth
 from .exceptions import DexibleException
 
-
 log = logging.getLogger('APIClient')
 
-DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1";
+DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1"
+
 
 class APIClient:
     def __init__(self, account, chain_id, network='ethereum', *args, **kwargs):
@@ -19,8 +19,8 @@ class APIClient:
         self.chain_id = chain_id
         self.chain_name = chain_to_name(self.network, self.chain_id)
         self.base_url = self._build_base_url()
-        log.debug(f"Created api client for chain {self.chain_name} on network {self.network}")
-
+        log.debug(f"Created api client for chain {self.chain_name} on "
+                  f"network {self.network}")
 
     async def get(self, endpoint):
         url = f"{self.base_url}/{endpoint}"
@@ -51,7 +51,7 @@ class APIClient:
             else:
                 post_data = data
             log.debug(f"Posting data: {post_data}")
-            
+
             r = requests.post(url, data=post_data, auth=self.adapter)
 
             if not r.content:
@@ -63,5 +63,6 @@ class APIClient:
             raise
 
     def _build_base_url(self):
-        base = os.getenv("API_BASE_URL") or f"https://{self.network}.{self.chain_name}.{DEFAULT_BASE_ENDPOINT}"
+        base = os.getenv("API_BASE_URL") or \
+            f"https://{self.network}.{self.chain_name}.{DEFAULT_BASE_ENDPOINT}"
         return base

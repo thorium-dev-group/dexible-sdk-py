@@ -31,8 +31,9 @@ class BoundedDelay(DexibleBasePolicy):
                            "randomize": self.randomize_delay}}
 
     def __str__(self):
-        return f"<Policy {self.tag} time_window_seconds: {self.time_window_seconds}, " \
-               f"randomize_delay: {self.randomize_delay}>"
+        return f"<Policy {self.tag} " \
+            f"time_window_seconds: {self.time_window_seconds}, " \
+            f"randomize_delay: {self.randomize_delay}>"
     __repr__ = __str__
 
 
@@ -97,8 +98,10 @@ class GasCost(DexibleBasePolicy):
                            "deviation": self.deviation or 0}}
 
     def __str__(self):
-        return f"<Policy {self.tag} gas_type: {self.gas_type}, amount: {self.amount}, "\
-               f"deviation {self.deviation}>"
+        return f"<Policy {self.tag} " \
+            f"gas_type: {self.gas_type}, " \
+            f"amount: {self.amount}, "\
+            f"deviation {self.deviation}>"
     __repr__ = __str__
 
 
@@ -122,19 +125,21 @@ class LimitPrice(DexibleBasePolicy):
     __repr__ = __str__
 
 
-
 class PriceBounds(DexibleBasePolicy):
     tag = "PriceBounds"
 
-    def __init__(self, base_price, upper_bound_percent=None, lower_bound_percent=None):
+    def __init__(self, base_price,
+                 upper_bound_percent=None, lower_bound_percent=None):
         super(PriceBounds, self).__init__(self.tag)
         self.base_price = base_price
         self.upper_bound_percent = upper_bound_percent
         self.lower_bound_percent = lower_bound_percent
 
     def verify(self):
-        if self.upper_bound_percent is None and self.lower_bound_percent is None:
-            return "PriceBounds requires either an upper_bound_percent or lower_bound_percent parameter or both"
+        if self.upper_bound_percent is None and \
+                self.lower_bound_percent is None:
+            return "PriceBounds requires either an upper_bound_percent "\
+                "or lower_bound_percent parameter or both"
 
     def serialize(self):
         return {"type": self.name,
@@ -143,8 +148,9 @@ class PriceBounds(DexibleBasePolicy):
                            "lowerBoundPercentage": self.lower_bound_percent}}
 
     def __str__(self):
-        return f"<Policy {self.tag} upper_bound_percent: {self.upper_bound_percent}, " \
-               f"lower_bound_percent: {self.lower_bound_percent}>"
+        return f"<Policy {self.tag} " \
+            f"upper_bound_percent: {self.upper_bound_percent}, " \
+            f"lower_bound_percent: {self.lower_bound_percent}>"
     __repr__ = __str__
 
 
@@ -185,5 +191,5 @@ class StopPrice(DexibleBasePolicy):
 
     def __str__(self):
         return f"<Policy {self.tag} trigger: {self.trigger}, " \
-               f"above: {self.above}>"
+            f"above: {self.above}>"
     __repr__ = __str__
