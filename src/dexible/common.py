@@ -91,7 +91,7 @@ def as_decs(numberish, unit="ether"):
     """
     Similar to ethers.utils.formatUnits( value [ , unit = "ether" ] ) ⇒ string, but pythonic
 
-    Takes a numberish and optionally a unit and returns a Decimal representation of the value
+    Takes a numberish (in wei) and optionally a unit and returns a Decimal representation of the value
     """
     if unit == "ether":
         unit = 18
