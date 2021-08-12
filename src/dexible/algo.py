@@ -128,13 +128,13 @@ class AlgoWrapper:
     def create(self, *args, **kwargs):
         _type = kwargs["type"]
 
-        if _type == self.types.Limit.value:
+        if _type in [self.types.Limit, self.types.Limit.value]:
             return self.create_limit(*args, **kwargs)
-        elif _type == self.types.Market.value:
+        elif _type in [self.types.Market, self.types.Market.value]:
             return self.create_market(*args, **kwargs)
-        elif _type == self.types.StopLoss.value:
+        elif _type in [self.types.StopLoss, self.types.StopLoss.value]:
             return self.create_stop_loss(*args, **kwargs)
-        elif _type == self.types.TWAP.value:
+        elif _type in [self.types.TWAP, self.types.TWAP.value]:
             return self.create_twap(*args, **kwargs)
         else:
             raise DexibleAlgoException(f"Unsupported algorithm type: {_type}")
