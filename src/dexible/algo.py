@@ -234,12 +234,12 @@ class AlgoWrapper:
         if "slippage_percent" not in kwargs:
             raise DexibleAlgoException("slippage_percent is required")
         slippage_percent = kwargs.get("slippage_percent")
-        if type(slippage_percent) == int:
+        if type(slippage_percent) in [float, int]:
             slippage_percent = policy.Slippage(amount=slippage_percent)
         elif type(slippage_percent) == policy.Slippage:
             pass
         else:
             raise DexibleAlgoException(
                 "slippage_percent must be of type "
-                "dexible.policy.Slippage or int")
+                "dexible.policy.Slippage or float")
         return [gas_policy, slippage_percent]
