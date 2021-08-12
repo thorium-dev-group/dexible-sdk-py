@@ -80,7 +80,7 @@ class GasCost(DexibleBasePolicy):
 
     def __init__(self, gas_type, amount=None, deviation=None):
         super(GasCost, self).__init__(self.tag)
-        if type(gas_type) == Enum:
+        if Enum in type(gas_type).__mro__:
             gas_type = gas_type.value
         self.gas_type = gas_type
         self.amount = amount
