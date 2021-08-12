@@ -18,8 +18,8 @@ DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1";
 class APIClient:
     SIGNATURE_PREFIX = "Signature "
 
-    def __init__(self, signer, chain_id, network='ethereum', *args, **kwargs):
-        self.signer = signer
+    def __init__(self, account, chain_id, network='ethereum', *args, **kwargs):
+        self.account = account
         self.network = network
         self.chain_id = chain_id
         self.chain_name = chain_to_name(self.network, self.chain_id)
@@ -57,7 +57,7 @@ class APIClient:
         #     expires_timestamp = created_timestamp + self.expires_in.total_seconds()
 
         # public key
-        key_id = self.signer.address
+        key_id = self.account.address
 
         # signature payload is assembled form of all headers being signed
         signing_string = self.build_signing_string(url, headers, method, required_header_fields)
@@ -68,7 +68,7 @@ class APIClient:
         # Workaround for js double wrapping:
         wrapped_signing_string = encode_defunct(self.double_wrap_as_in_upstream(text=signing_string))
 
-        signature = self.signer.sign_message(wrapped_signing_string)
+        signature = self.account.sign_message(wrapped_signing_string)
 
         # build the fully formed signature string
         signature_data = {

@@ -11,8 +11,8 @@ from .exceptions import DexibleException
 class DexibleHttpSignatureAuth(AuthBase):
     SIGNATURE_PREFIX = "Signature "
 
-    def __init__(self, signer, expires_in=None):
-        self.signer = signer
+    def __init__(self, account, expires_in=None):
+        self.account = account
         if expires_in is not None:
             raise DexibleException("expires_in is currently unsupported")
 
@@ -44,7 +44,7 @@ class DexibleHttpSignatureAuth(AuthBase):
         #     expires_timestamp = created_timestamp + self.expires_in.total_seconds()
 
         # public key
-        key_id = self.signer.address
+        key_id = self.account.address
 
         # signature payload is assembled form of all headers being signed
         signing_string = self.build_signing_string(r, required_header_fields)
@@ -55,7 +55,7 @@ class DexibleHttpSignatureAuth(AuthBase):
         # Workaround for js double wrapping:
         wrapped_signing_string = encode_defunct(self.double_wrap_as_in_upstream(text=signing_string))
 
-        signature = self.signer.sign_message(wrapped_signing_string)
+        signature = self.account.sign_message(wrapped_signing_string)
 
         # build the fully formed signature string
         signature_data = {

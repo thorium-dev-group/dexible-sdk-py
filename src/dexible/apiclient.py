@@ -12,8 +12,8 @@ log = logging.getLogger('APIClient')
 DEFAULT_BASE_ENDPOINT = "api.dexible.io/v1";
 
 class APIClient:
-    def __init__(self, signer, chain_id, network='ethereum', *args, **kwargs):
-        self.signer = signer
+    def __init__(self, account, chain_id, network='ethereum', *args, **kwargs):
+        self.account = account
         self.adapter = None
         self.network = network
         self.chain_id = chain_id
@@ -27,7 +27,7 @@ class APIClient:
         log.debug(f"GET call to {url}")
         try:
             if self.adapter is None:
-                self.adapter = DexibleHttpSignatureAuth(self.signer)
+                self.adapter = DexibleHttpSignatureAuth(self.account)
 
             r = requests.get(url, auth=self.adapter)
 
@@ -44,7 +44,7 @@ class APIClient:
         log.debug(f"POST call to {url}")
         try:
             if self.adapter is None:
-                self.adapter = DexibleHttpSignatureAuth(self.signer)
+                self.adapter = DexibleHttpSignatureAuth(self.account)
 
             if type(data) in [dict, list]:
                 post_data = json.dumps(data)

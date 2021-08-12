@@ -77,10 +77,10 @@ class TokenHelper:
 
 		return returndict
 
-	async def increase_spending(self, provider, chain_id, signer, token, amount):
+	async def increase_spending(self, provider, chain_id, account, token, amount):
 		w3 = web3.Web3(provider)
-		w3.middleware_onion.add(construct_sign_and_send_raw_middleware(signer))
-		w3.eth.default_account = signer.address
+		w3.middleware_onion.add(construct_sign_and_send_raw_middleware(account))
+		w3.eth.default_account = account.address
 		token_contract = w3.eth.contract(abi=ERC20_ABI, address=w3.toChecksumAddress(token.address))
 		settlement_address = CHAIN_CONFIG[chain_id]["Settlement"]  # Settlement contract address
 		return web3.eth.to_hex(token_contract.functions.approve(settlement_address, amount).transact())
@@ -91,14 +91,10 @@ class TokenHelper:
 
 
 class TokenSupport:
-    signer = None
-    provider = None
-    api_client = None
-    chain_id = None
     address = None
 
-    def __init__(self, signer, provider, api_client, chain_id):
-        self.signer = signer
+    def __init__(self, account, provider, api_client, chain_id):
+        self.account = account
         self.provider = provider
         self.api_client = api_client
         self.chain_id = chain_id
@@ -113,7 +109,7 @@ class TokenSupport:
             raise DexibleException("Unsupported token address: " + address)
 
         if self.address is None:
-            self.address = self.signer.address
+            self.address = self.account.address
 
         return await self.tokenhelper.find(provider=self.provider,
         								   chain_id=self.chain_id,
@@ -124,7 +120,7 @@ class TokenSupport:
         tx_id = await self.tokenhelper.increase_spending(
         	provider=self.provider,
         	chain_id=self.chain_id,
-        	signer=self.signer,
+        	account=self.account,
         	token=token,
         	amount=amount)
         w3 = web3.Web3(self.provider)

@@ -34,9 +34,9 @@ class BaseOrder:
             provider = web3.Web3.HTTPProvider(
                 f"https://{chain_to_name('ethereum', chain_id)}.infura.io/v3/{infura}")
 
-        signer = web3.Account.from_key(web3.Web3.toBytes(hexstr=key))
+        account = web3.Account.from_key(web3.Web3.toBytes(hexstr=key))
 
-        return DexibleSDK(provider, signer, chain_id, 'ethereum')
+        return DexibleSDK(provider, account, chain_id, 'ethereum')
 
     def __init__(self, sdk, token_in, token_out, amount_in, algo_details, tags=[]):
         self.dexible = sdk
