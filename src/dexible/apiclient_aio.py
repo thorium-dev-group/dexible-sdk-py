@@ -157,7 +157,23 @@ class APIClient:
                 async with session.get(url) as r:
                     json_body = await r.json()
                     if not json_body:
-                        raise DexibleException("Missing result in GET request")
+                        raise DexibleException(
+                            message="Missing result in GET request")
+                    elif 'error' in json_body:
+                        log.debug(f"Problem reported from server "
+                                  f"{json_body['error']}")
+                        if 'message' in json_body['error']:
+                            errmsg = json_body['error']['message']
+                        else:
+                            errmsg = json_body['error']
+                        if 'requestId' in json_body['error']:
+                            req_id = json_body['error']['requestId']
+                        else:
+                            req_id = None
+                        raise DexibleException(
+                            message=errmsg,
+                            request_id=req_id,
+                            json_response=json_body)
                     return json_body
         except Exception as e:
             log.error("Problem in APIClient GET request ", e)
@@ -179,7 +195,22 @@ class APIClient:
                     json_body = await r.json()
                     if not json_body:
                         raise DexibleException(
-                            "Missing result in POST request")
+                            message="Missing result in POST request")
+                    elif 'error' in json_body:
+                        log.debug(f"Problem reported from server "
+                                  f"{json_body['error']}")
+                        if 'message' in json_body['error']:
+                            errmsg = json_body['error']['message']
+                        else:
+                            errmsg = json_body['error']
+                        if 'requestId' in json_body['error']:
+                            req_id = json_body['error']['requestId']
+                        else:
+                            req_id = None
+                        raise DexibleException(
+                            message=errmsg,
+                            request_id=req_id,
+                            json_response=json_body)
                     return json_body
         except Exception as e:
             log.error("Problem in APIClient POST request ", e)

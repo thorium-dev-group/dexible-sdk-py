@@ -1,5 +1,9 @@
 class DexibleException(Exception):
-    pass
+    def __init__(self, message="", request_id=None, json_response=None, *args, **kwargs):
+        self.message = message
+        self.request_id = request_id
+        self.json_response = json_response
+        super(DexibleException, self).__init__(*args, **kwargs)
 
 
 class DexibleOrderException(DexibleException):
