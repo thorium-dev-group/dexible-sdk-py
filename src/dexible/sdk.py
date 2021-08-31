@@ -1,5 +1,5 @@
 from enum import Enum
-from .common import Contact
+from .common import Contact, Reports
 from .token import TokenSupport
 from .order import OrderWrapper
 from .quote import QuoteWrapper
@@ -33,5 +33,6 @@ class DexibleSDK:
         self.order = OrderWrapper(self.api_client)
         self.quote = QuoteWrapper(self.api_client)
         self.contact = Contact(self.api_client)
+        self.reports = Reports(self.api_client)
 
         super(DexibleSDK, self).__init__(*args, **kwargs)
