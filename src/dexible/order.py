@@ -146,6 +146,18 @@ class DexOrder:
         log.debug(f"Sending raw order details: {serialized}")
         return await self.api_client.post("orders", serialized)
 
+    def toJSON(self):
+        return {
+            "tokenIn": self.token_in,
+            "tokenOut": self.token_out,
+            "amountIn": self.amount_in,
+            "algo": self.algo,
+            "quoteId": self.quote_id,
+            "quote": self.quote,
+            "maxRounds": self.max_rounds,
+            "tags": self.tags
+        }
+
     def __str__(self):
         has_quote = self.quote_id > 0
         quote_str = "No quote"
