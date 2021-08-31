@@ -242,4 +242,18 @@ class AlgoWrapper:
             raise DexibleAlgoException(
                 "slippage_percent must be of type "
                 "dexible.policy.Slippage or float")
-        return [gas_policy, slippage_percent]
+
+        policy_set = [gas_policy, slippage_percent]
+        if "expiration" in kwargs:
+            expiration = kwargs.get("expiration")
+            if type(expiration) == int:
+                expiration =  policy.Expiration(seconds=expiration)
+            elif type(expiration) == policy.Expiration:
+                pass
+            else:
+                raise DexibleAlgoException(
+                    "expiration must be of type "
+                    "dexible.policy.Expiration of int")
+            policy_set.append(expiration)
+
+        return policy_set
