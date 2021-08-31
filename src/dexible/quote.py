@@ -17,14 +17,12 @@ class QuoteWrapper:
 
 
 async def get_quote(api_client, token_in, token_out, amount_in,
-                    slippage_percent, max_rounds=None, min_order_size=None,
+                    slippage_percent, max_rounds=None, min_order_size=-1,
                     max_fixed_gas=None, fixed_price=None):
-    if min_order_size is None:
-        min_order_size = amount_in * 30 // 100
     if max_rounds:
         min_order_size //= max_rounds
-    if min_order_size < 1:
-        min_order_size = amount_in * 30 // 100
+        if min_order_size < 1:
+            min_order_size = amount_in * 30 // 100
 
     quote_body = {
         "amountIn": str(amount_in),
