@@ -3,6 +3,11 @@ class DexibleException(Exception):
         self.message = message
         self.request_id = request_id
         self.json_response = json_response
+
+        if request_id is None and \
+                type(json_response) == dict and \
+                'requestId' in json_response:
+            self.request_id = json_response['requestId']
         super(DexibleException, self).__init__(*args, **kwargs)
 
 

@@ -156,10 +156,10 @@ class APIClient:
             async with aiohttp.ClientSession(headers=hdrs) as session:
                 async with session.get(url) as r:
                     json_body = await r.json()
-                    if not json_body:
+                    if json_body is None:
                         raise DexibleException(
-                            message="Missing result in GET request")
-                    elif 'error' in json_body:
+                            message=f"Missing result in GET request: {json_body}")
+                    elif type(json_body) == dict and 'error' in json_body:
                         log.debug(f"Problem reported from server "
                                   f"{json_body['error']}")
                         if 'message' in json_body['error']:
@@ -193,10 +193,10 @@ class APIClient:
             async with aiohttp.ClientSession(headers=hdrs) as session:
                 async with session.post(url, data=post_data) as r:
                     json_body = await r.json()
-                    if not json_body:
+                    if json_body is None:
                         raise DexibleException(
-                            message="Missing result in POST request")
-                    elif 'error' in json_body:
+                            message=f"Missing result in GET request: {json_body}")
+                    elif type(json_body) == dict and 'error' in json_body:
                         log.debug(f"Problem reported from server "
                                   f"{json_body['error']}")
                         if 'message' in json_body['error']:
