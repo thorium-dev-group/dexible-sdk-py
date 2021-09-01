@@ -192,10 +192,18 @@ class AlgoWrapper:
         randomize_delay = kwargs.get("randomize_delay", False)
         if type(randomize_delay) != bool:
             raise DexibleAlgoException("randomize_delay must be of type bool")
+
+        expire_after_time_window = kwargs.get(
+            "expire_after_time_window", False)
+        if type(expire_after_time_window) != bool:
+            raise DexibleAlgoException(
+                "expire_after_time_window must be of type bool")
+
         policies = self._build_base_polices(*args, **kwargs) + \
             [policy.BoundedDelay(
                 randomize_delay=randomize_delay,
-                time_window_seconds=time_window_seconds)]
+                time_window_seconds=time_window_seconds,
+                expire_after_time_window=expire_after_time_window)]
         log.debug(f"Parsed TWAP duration in seconds: {time_window_seconds}")
 
         if "price_range" in kwargs:
@@ -247,7 +255,7 @@ class AlgoWrapper:
         if "expiration" in kwargs:
             expiration = kwargs.get("expiration")
             if type(expiration) == int:
-                expiration =  policy.Expiration(seconds=expiration)
+                expiration = policy.Expiration(seconds=expiration)
             elif type(expiration) == policy.Expiration:
                 pass
             else:
