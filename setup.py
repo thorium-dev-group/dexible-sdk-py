@@ -26,8 +26,6 @@ setup(name="dexible",
 	  ],
 	  classifiers=[
 	  		"Development Status :: 5 - Production/Stable",
-	  		"Intended Audience :: Traders",
-	  		"Topic :: Finance :: Exchange",
 	  		"License :: OSI Approved :: MIT License",
 	  		"Programming Language :: Python :: 3",
 	  		"Programming Language :: Python :: 3.5",
