@@ -56,6 +56,7 @@ class DexibleBaseAlgorithm:
             err = p.verify()
             if err is not None:
                 log.error(f"Policy verification failed: {err}")
+                return err
 
             if p.name in required:
                 req_matches.append(p.name)
@@ -265,3 +266,5 @@ class AlgoWrapper:
             policy_set.append(expiration)
 
         return policy_set
+
+types = AlgoWrapper.types

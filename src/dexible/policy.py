@@ -17,7 +17,8 @@ class DexibleBasePolicy:
 class BoundedDelay(DexibleBasePolicy):
     tag = "BoundedDelay"
 
-    def __init__(self, time_window_seconds, randomize_delay):
+    def __init__(self, time_window_seconds, randomize_delay,
+                 expire_after_time_window=None):
         super(BoundedDelay, self).__init__(self.tag)
         self.time_window_seconds = time_window_seconds
         self.randomize_delay = randomize_delay
@@ -28,9 +29,10 @@ class BoundedDelay(DexibleBasePolicy):
 
     def serialize(self):
         return {"type": self.name,
-                "params": {"timeWindow": self.time_window_seconds,
-                           "randomize": self.randomize_delay,
-                           "expireAfterTimeWindow": self.expire_after_time_window}}
+                "params": {
+                    "timeWindow": self.time_window_seconds,
+                    "randomize": self.randomize_delay,
+                    "expireAfterTimeWindow": self.expire_after_time_window}}
 
     def __str__(self):
         return f"<Policy {self.tag} " \
