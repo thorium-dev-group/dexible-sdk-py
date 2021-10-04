@@ -82,17 +82,32 @@ class Reports:
     def __init__(self, api_client):
         self.api_client = api_client
 
-    async def get_summary(self, start, end):
+    async def get_summary_delta(self, start, delta):
+        """Retrieve the report summary based on a start date and time delta.  The time delta is added to the start date to compute the report window.
+
+        Args:
+            start (datetime.datetime): Start datetime object.
+            delta (datetime.timedelta): Timedelta parameter that is added to the start date to get the report window.  Delta should be negative to get data from the past.
+
+        Returns:
+            string: CVS formatted output for the report as a JSON array.
+        """
+        return await self.get_summary_between(start, (start + delta))
+
+    async def get_summary_between(self, start, end):
+        """Retrieve the report summary based on a start and end datetime objects.
+
+        Args:
+            start (datetime.datetime): Start datetime object.
+            end (datetime.datetime): End datetime object.
+
+        Returns:
+            string: CVS formatted output for the report as a JSON array.
+        """
         return await self.api_client.post("report/order_summary/csv", data={
-            "startDate": start.total_seconds(),
-            "endDate": end.total_seconds()})
+            "startDate": start.timestamp(),
+            "endDate": end.timestamp()})
 
-    async def get_all(self):
-        return await self.api_client.get("contact-method")
-
-    async def toggle(self, id):
-        return await self.api_client.post(
-            f"contact-method/toggle/{id}", data={"id": id})
 
 
 def as_units(numberish, unit="ether"):
